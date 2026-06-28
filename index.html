@@ -389,14 +389,23 @@
       <div class="addr">서울특별시 영등포구 의사당대로 1 (국회의사당 내)</div>
       <div class="addr" style="margin-top:4px;">지하철 9호선 국회의사당역 6번 출구 도보 약 7분</div>
 
-      <!-- 카카오 지도 (퍼가기 이미지 지도, 반응형 / 하단 바 제거) -->
-      <div class="kakao-roughmap">
-        <a class="map-link" href="https://kko.to/4HA4D1Zo_j" target="_blank" rel="noopener">
-          <img class="map"
-               src="https://t1.daumcdn.net/roughmap/imgmap/82a6b3d10712e7bc6fdd9c47dfa6fc3334b2e91720ee474489bb71d257bfc220"
-               alt="국회의사당 사랑재 지도" />
-        </a>
+      <!-- 카카오 지도 (퍼가기 - 로더 스크립트, 컨테이너 폭에 맞춰 반응형) -->
+      <div class="kakao-roughmap" id="kakaoMapWrap">
+        <div id="daumRoughmapContainer1782645629147" class="root_daum_roughmap root_daum_roughmap_landing"></div>
       </div>
+      <script charset="UTF-8" class="daum_roughmap_loader_script" src="https://ssl.daumcdn.net/dmaps/map_js_init/roughmapLoader.js"></script>
+      <script charset="UTF-8">
+        (function () {
+          var wrap = document.getElementById('kakaoMapWrap');
+          var w = Math.min(wrap.clientWidth || 400, 640);
+          new daum.roughmap.Lander({
+            "timestamp": "1782645629147",
+            "key": "qbg5ehehh72",
+            "mapWidth": String(Math.round(w)),
+            "mapHeight": String(Math.round(w * 360 / 640))
+          }).render();
+        })();
+      </script>
 
       <!-- 길찾기 버튼: 카카오 · 네이버 · 티맵 -->
       <div class="map-btns">
@@ -447,16 +456,16 @@
           <div class="acc-row">
             <div>
               <div class="who">신부 민지수</div>
-              <div class="num">카카오뱅크 3333-01-1234567</div>
+              <div class="num">국민 650302-04-133211</div>
             </div>
-            <button class="copy-btn" onclick="copyText('카카오뱅크 3333-01-1234567')">복사</button>
+            <button class="copy-btn" onclick="copyText('국민 650302-04-133211')">복사</button>
           </div>
           <div class="acc-row">
             <div>
               <div class="who">어머니 김영순</div>
-              <div class="num">우리 1002-333-444555</div>
+              <div class="num">우리 1002-544-749449</div>
             </div>
-            <button class="copy-btn" onclick="copyText('우리 1002-333-444555')">복사</button>
+            <button class="copy-btn" onclick="copyText('우리 1002-544-749449')">복사</button>
           </div>
         </div>
       </div>
@@ -498,11 +507,12 @@
 
     // 복사 + 토스트
     function copyText(text) {
-      // 은행명/계좌번호에서 숫자만 복사하고 싶으면 아래 줄의 text를 가공하세요
-      navigator.clipboard.writeText(text).then(showToast).catch(function () {
+      // 은행명·하이픈을 빼고 숫자(계좌번호)만 복사
+      var digits = (text || '').replace(/[^0-9]/g, '');
+      navigator.clipboard.writeText(digits).then(showToast).catch(function () {
         // 클립보드 API 미지원 환경 대비
         var t = document.createElement('textarea');
-        t.value = text; document.body.appendChild(t); t.select();
+        t.value = digits; document.body.appendChild(t); t.select();
         document.execCommand('copy'); document.body.removeChild(t);
         showToast();
       });
@@ -519,12 +529,27 @@
     // ===== 갤러리 사진 목록 (images/web/ 안의 파일명) =====
     var GALLERY_BASE = "images/web/";
     var GALLERY = [
+      "A1.jpg",
+      "A2.jpg",
+      "A3.jpg",
+      "A4.jpg",
+      "A5.jpg",
+      "A6.jpg",
+      "A7.jpg",
+      "A8.jpg",
+      "A9.jpg",
+      "B1.jpg",
+      "C1.jpg",
+      "C2.jpg",
+      "C3.jpg",
+      "C4.jpg",
+      "C6.jpg",
+      "C7.jpg",
+      "C8.jpg",
       "C2003699-2.jpg",
       "C2003716.jpg",
       "C2003788.jpg",
       "C2003960.jpg",
-      "C2003973.jpg",
-      "C2003979.jpg",
       "C2003981.jpg",
       "C2004079.jpg",
       "C2004217.jpg",
@@ -532,10 +557,10 @@
       "R5000096.jpg",
       "R5000097.jpg",
       "R5000127.jpg",
-      "R5000130.jpg",
       "R5000159.jpg",
       "R5000278.jpg",
       "R5000314.jpg",
+      "R5000324.jpg",
       "R5000384.jpg",
       "R5000389.jpg",
       "R5000435.jpg",
@@ -545,50 +570,19 @@
       "R5000547.jpg",
       "R5000607.jpg",
       "R5000648.jpg",
-      "R5000742.jpg",
-      "R5000789.jpg",
-      "R5000811.jpg",
-      "R5000839.jpg",
-      "R5000870.jpg",
       "R5000928.jpg",
       "R5000957.jpg",
-      "R5000985.jpg",
-      "R5001066.jpg",
-      "R5001204.jpg",
       "R5001255.jpg",
       "R5001360.jpg",
       "R5001386.jpg",
       "R5001408.jpg",
-      "R5001461.jpg",
-      "R5001554.jpg",
-      "R5001564.jpg",
-      "R5001599.jpg",
       "R5001602.jpg",
       "R5001651.jpg",
       "R5001696.jpg",
       "R5001711.jpg",
       "R5001789.jpg",
       "R5001798.jpg",
-      "R5009569.jpg",
-      "R5009575.jpg",
-      "R5009610.jpg",
-      "R5009618.jpg",
-      "R5009628.jpg",
-      "R5009663.jpg",
-      "R5009700.jpg",
-      "R5009711.jpg",
-      "R5009719.jpg",
-      "R5009746.jpg",
-      "R5009749.jpg",
-      "R5009762.jpg",
-      "R5009786.jpg",
-      "R5009859.jpg",
-      "R5009862.jpg",
-      "R5009863.jpg",
-      "R5009883.jpg",
-      "R5009896.jpg",
-      "R5009991.jpg",
-      "R5009995.jpg"
+      "boat1.jpg"
     ];
 
     // ===== 갤러리 페이지(3x3) + 페이지 점 생성 =====
