@@ -155,6 +155,8 @@
       display: none;
       z-index: 100;
       overflow: hidden;
+      touch-action: none;            /* 핀치/더블탭 줌 방지(좌우 스와이프는 JS로 처리) */
+      -ms-touch-action: none;
     }
     .lightbox.open { display: block; }
     .lb-track {
@@ -453,6 +455,13 @@
           </div>
           <div class="acc-row">
             <div>
+              <div class="who">아버지 민경국</div>
+              <div class="num">농협 036-12-080461</div>
+            </div>
+            <button class="copy-btn" onclick="copyText('농협 036-12-080461')">복사</button>
+          </div>
+          <div class="acc-row">
+            <div>
               <div class="who">어머니 김영순</div>
               <div class="num">우리 1002-544-749449</div>
             </div>
@@ -674,6 +683,14 @@
         if (Math.abs(dx) > 50) { go(dx < 0 ? 1 : -1); }
         else { render(true); }
       });
+
+      // 확대(줌) 방지: 멀티터치 핀치 / iOS 제스처 / 더블탭
+      lb.addEventListener('touchmove', function (e) {
+        if (e.touches.length > 1) e.preventDefault();
+      }, { passive: false });
+      lb.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+      lb.addEventListener('gesturechange', function (e) { e.preventDefault(); });
+      lb.addEventListener('dblclick', function (e) { e.preventDefault(); });
 
       // 데스크탑 키보드
       document.addEventListener('keydown', function (e) {
