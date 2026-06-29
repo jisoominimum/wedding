@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
   <title>저희 결혼합니다</title>
 
   <!-- 카카오톡 공유 미리보기 (OG 태그) -->
@@ -283,7 +284,12 @@
     }
     .acc-row:last-child { border-bottom: none; }
     .acc-row .who { color: var(--muted); font-size: 13px; }
-    .acc-row .num { font-weight: 600; margin-top: 2px; }
+    .acc-row .num { font-weight: 600; margin-top: 2px; color: var(--ink); }
+    /* 자동 전화번호 링크가 생겨도 검정·밑줄 없이 보이게 */
+    .acc-body a, .acc-row .num a {
+      color: var(--ink) !important;
+      text-decoration: none !important;
+    }
     .copy-btn {
       border: 1px solid var(--line);
       background: #fff;
@@ -509,21 +515,46 @@
     function copyText(text) {
       // 은행명·하이픈을 빼고 숫자(계좌번호)만 복사
       var digits = (text || '').replace(/[^0-9]/g, '');
-      navigator.clipboard.writeText(digits).then(showToast).catch(function () {
-        // 클립보드 API 미지원 환경 대비
+
+      // 폴백: http(비보안) / 구형 브라우저 / iOS 대응
+      function fallbackCopy() {
         var t = document.createElement('textarea');
-        t.value = digits; document.body.appendChild(t); t.select();
-        document.execCommand('copy'); document.body.removeChild(t);
-        showToast();
-      });
+        t.value = digits;
+        t.setAttribute('readonly', '');
+        t.contentEditable = true;
+        t.style.position = 'fixed';
+        t.style.top = '-9999px';
+        t.style.fontSize = '16px'; // iOS 확대 방지
+        document.body.appendChild(t);
+        var range = document.createRange();
+        range.selectNodeContents(t);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        t.setSelectionRange(0, digits.length);
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+        sel.removeAllRanges();
+        document.body.removeChild(t);
+        showToast(ok);
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+        navigator.clipboard.writeText(digits).then(function () { showToast(true); }).catch(fallbackCopy);
+      } else {
+        fallbackCopy();
+      }
     }
 
     var toastTimer;
-    function showToast() {
+    function showToast(ok) {
       var el = document.getElementById('toast');
+      el.textContent = (ok === false)
+        ? '복사하지 못했어요. 숫자를 길게 눌러 복사해 주세요'
+        : '복사되었습니다';
       el.classList.add('show');
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1600);
+      toastTimer = setTimeout(function () { el.classList.remove('show'); }, 1800);
     }
 
     // ===== 갤러리 사진 목록 (images/web/ 안의 파일명) =====
