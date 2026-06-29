@@ -216,6 +216,15 @@
     .place { text-align: center; }
     .place .name { font-size: 18px; font-weight: 700; }
     .place .addr { color: var(--muted); font-size: 14.5px; margin-top: 6px; }
+    .addr-copy {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .addr-copy .addr { margin-top: 0; }
     .map-embed {
       width: 100%;
       aspect-ratio: 4 / 3;
@@ -385,7 +394,10 @@
       <div class="eyebrow">LOCATION</div>
       <div class="title">오시는 길</div>
       <div class="name">국회의사당사랑재</div>
-      <div class="addr">서울특별시 영등포구 의사당대로 1 (국회의사당 내)</div>
+      <div class="addr-copy">
+        <span class="addr">서울특별시 영등포구 의사당대로 1 (국회의사당 내)</span>
+        <button class="copy-btn" onclick="copyAddr('서울특별시 영등포구 의사당대로 1')">주소복사</button>
+      </div>
       <div class="addr" style="margin-top:4px;">지하철 9호선 국회의사당역 6번 출구 도보 약 10분</div>
 
       <!-- 카카오 지도 (퍼가기 - 로더 스크립트, 컨테이너 폭에 맞춰 반응형) -->
@@ -403,6 +415,22 @@
             "mapWidth": String(Math.round(w)),
             "mapHeight": String(Math.round(w * 360 / 640))
           }).render();
+
+          // 카카오 위젯이 표시하는 '전화' 정보 숨기기 (렌더 후 비동기로 생기므로 재시도)
+          function hideKakaoPhone() {
+            var c = document.getElementById('daumRoughmapContainer1782645629147');
+            if (!c) return;
+            c.querySelectorAll('a[href^="tel:"]').forEach(function (a) {
+              (a.closest('span,div,li') || a).style.display = 'none';
+            });
+            c.querySelectorAll('*').forEach(function (el) {
+              if (el.children.length === 0) {
+                var txt = (el.textContent || '').trim();
+                if (/^전화|☎|^TEL/i.test(txt)) el.style.display = 'none';
+              }
+            });
+          }
+          [400, 1200, 2500].forEach(function (ms) { setTimeout(hideKakaoPhone, ms); });
         })();
       </script>
 
@@ -432,17 +460,17 @@
         <div class="acc-body">
           <div class="acc-row">
             <div>
-              <div class="who">신랑 손명준</div>
-              <div class="num">국민 123456-78-901234</div>
+              <div class="who">아버지 손태원</div>
+              <div class="num">농협 605-01-355797</div>
             </div>
-            <button class="copy-btn" onclick="copyText('국민 123456-78-901234')">복사</button>
+            <button class="copy-btn" onclick="copyText('농협 605-01-355797')">복사</button>
           </div>
           <div class="acc-row">
             <div>
-              <div class="who">아버지 손태원</div>
-              <div class="num">신한 110-222-333444</div>
+              <div class="who">어머니 김은희</div>
+              <div class="num">광주은행 074-121-472869</div>
             </div>
-            <button class="copy-btn" onclick="copyText('신한 110-222-333444')">복사</button>
+            <button class="copy-btn" onclick="copyText('광주은행 074-121-472869')">복사</button>
           </div>
         </div>
       </div>
@@ -512,14 +540,11 @@
     }
 
     // 복사 + 토스트
-    function copyText(text) {
-      // 은행명·하이픈을 빼고 숫자(계좌번호)만 복사
-      var digits = (text || '').replace(/[^0-9]/g, '');
-
+    function doCopy(value) {
       // 폴백: http(비보안) / 구형 브라우저 / iOS 대응
       function fallbackCopy() {
         var t = document.createElement('textarea');
-        t.value = digits;
+        t.value = value;
         t.setAttribute('readonly', '');
         t.contentEditable = true;
         t.style.position = 'fixed';
@@ -531,20 +556,22 @@
         var sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-        t.setSelectionRange(0, digits.length);
+        t.setSelectionRange(0, value.length);
         var ok = false;
         try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
         sel.removeAllRanges();
         document.body.removeChild(t);
         showToast(ok);
       }
-
       if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
-        navigator.clipboard.writeText(digits).then(function () { showToast(true); }).catch(fallbackCopy);
+        navigator.clipboard.writeText(value).then(function () { showToast(true); }).catch(fallbackCopy);
       } else {
         fallbackCopy();
       }
     }
+    // 계좌: 은행명·하이픈 빼고 숫자만 / 주소: 그대로
+    function copyText(text) { doCopy((text || '').replace(/[^0-9]/g, '')); }
+    function copyAddr(text) { doCopy(text); }
 
     var toastTimer;
     function showToast(ok) {
