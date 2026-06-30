@@ -233,6 +233,12 @@
       margin-top: 6px;
     }
     .addr-copy .addr { margin-top: 0; }
+    .place-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.75;
+    }
     .map-embed {
       width: 100%;
       aspect-ratio: 4 / 3;
@@ -446,6 +452,7 @@
               if (el.children.length === 0) {
                 var txt = (el.textContent || '').trim();
                 if (/^전화|☎|^TEL/i.test(txt)) el.style.display = 'none';
+                if (/의사당대로|영등포구/.test(txt)) el.style.display = 'none'; // 중복 주소 숨김
               }
             });
           }
@@ -455,7 +462,7 @@
 
       <!-- 지도 밑 주소 + 복사 -->
       <div class="addr-copy">
-        <span class="addr">서울특별시 영등포구 의사당대로 1 (국회의사당 내)</span>
+        <span class="addr">영등포구 의사당대로 1</span>
         <button class="copy-btn" onclick="copyAddr('서울특별시 영등포구 의사당대로 1')">복사</button>
       </div>
 
@@ -467,6 +474,10 @@
            target="_blank" rel="noopener">네이버지도</a>
         <a href="tmap://route?goalname=국회의사당사랑재&goalx=126.914347&goaly=37.531786"
            rel="noopener">티맵</a>
+      </div>
+      <div class="place-note">
+        자차 이용 시 입구에서 “사랑재 예식”이라고 말씀해 주시면 됩니다.<br />
+        주차 : 국회의사당 내 사랑재 근처 주차장 및 국회의사당 내 주차장 이용
       </div>
     </section>
 
