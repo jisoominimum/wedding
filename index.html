@@ -324,21 +324,6 @@
       white-space: nowrap;
     }
 
-    /* ===== 공유 버튼 ===== */
-    .share-btn {
-      display: block;
-      width: 100%;
-      padding: 15px 0;
-      border: none;
-      border-radius: 8px;
-      background: #FEE500;
-      color: #3c1e1e;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
     /* ===== 연락하기 ===== */
     .contact { display: flex; gap: 8px; }
     .contact a {
@@ -451,7 +436,7 @@
             c.querySelectorAll('*').forEach(function (el) {
               if (el.children.length === 0) {
                 var txt = (el.textContent || '').trim();
-                if (/^전화|☎|^TEL/i.test(txt)) el.style.display = 'none';
+                if (/^전화|^주소|☎|^TEL/i.test(txt)) el.style.display = 'none'; // 라벨 숨김
                 if (/의사당대로|영등포구/.test(txt)) el.style.display = 'none'; // 중복 주소 숨김
               }
             });
@@ -477,7 +462,7 @@
       </div>
       <div class="place-note">
         자차 이용 시 입구에서 “사랑재 예식”이라고 말씀해 주시면 됩니다.<br />
-        주차 : 국회의사당 내 사랑재 근처 주차장 및 국회의사당 내 주차장 이용
+        국회의사당 내 사랑재 근처 및 국회의사당 내 주차장 이용
       </div>
     </section>
 
@@ -555,13 +540,6 @@
       </div>
     </section>
 
-    <!-- 공유하기 -->
-    <section id="shareSection" style="display:none;">
-      <div class="eyebrow">SHARE</div>
-      <div class="title">청첩장 공유하기</div>
-      <button id="kakaoShareBtn" class="share-btn">💬 카카오톡으로 공유하기</button>
-    </section>
-
     <footer>
       THANK YOU<br />
       손명준 &amp; 민지수
@@ -579,40 +557,6 @@
   </div>
 
   <div class="toast" id="toast">복사되었습니다</div>
-
-  <!-- 카카오톡 공유 (Kakao Developers JavaScript SDK) -->
-  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
-  <script>
-    var KAKAO_JS_KEY = "48c032207e61bf06177f4e960a394522";
-    (function () {
-      if (!KAKAO_JS_KEY || typeof Kakao === "undefined") return;
-      try {
-        if (!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
-        document.getElementById('shareSection').style.display = '';
-        document.getElementById('kakaoShareBtn').addEventListener('click', function () {
-          Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-              title: '손명준 ❤ 민지수 결혼합니다',
-              description: '2026. 11. 1. 일요일 오전 11시 · 국회사랑재',
-              imageUrl: 'https://www.mj-js.info/images/main.jpg',
-              link: { mobileWebUrl: 'https://www.mj-js.info/', webUrl: 'https://www.mj-js.info/' }
-            },
-            buttons: [
-              {
-                title: '모바일 청첩장 보기',
-                link: { mobileWebUrl: 'https://www.mj-js.info/', webUrl: 'https://www.mj-js.info/' }
-              },
-              {
-                title: '오시는 길',
-                link: { mobileWebUrl: 'https://kko.to/4HA4D1Zo_j', webUrl: 'https://kko.to/4HA4D1Zo_j' }
-              }
-            ]
-          });
-        });
-      } catch (e) { /* 키 오류 시 버튼 숨김 유지 */ }
-    })();
-  </script>
 
   <script>
     // 계좌 아코디언 열고 닫기
