@@ -250,7 +250,7 @@
     /* 카카오 퍼가기 지도 (반응형) */
     .kakao-roughmap {
       width: 100%;
-      margin-top: 18px;
+      margin-top: 8px;
       font: normal normal 400 12px/normal "Apple SD Gothic Neo", dotum, sans-serif;
       color: #333;
     }
@@ -322,21 +322,6 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-    }
-
-    /* ===== 공유 버튼 ===== */
-    .share-btn {
-      display: block;
-      width: 100%;
-      padding: 15px 0;
-      border: none;
-      border-radius: 8px;
-      background: #FEE500;
-      color: #3c1e1e;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
     }
 
     /* ===== 연락하기 ===== */
@@ -425,6 +410,12 @@
       <div class="name">국회의사당사랑재</div>
       <div class="addr" style="margin-top:6px;">지하철 9호선 국회의사당역 6번 출구 도보 약 10분</div>
 
+      <!-- 주소 + 복사 (지도 위) -->
+      <div class="addr-copy">
+        <span class="addr">영등포구 의사당대로 1</span>
+        <button class="copy-btn" onclick="copyAddr('서울특별시 영등포구 의사당대로 1')">복사</button>
+      </div>
+
       <!-- 카카오 지도 (퍼가기 - 로더 스크립트, 컨테이너 폭에 맞춰 반응형) -->
       <div class="kakao-roughmap" id="kakaoMapWrap">
         <div id="daumRoughmapContainer1782645629147" class="root_daum_roughmap root_daum_roughmap_landing"></div>
@@ -459,12 +450,6 @@
           [400, 1200, 2500].forEach(function (ms) { setTimeout(hideKakaoPhone, ms); });
         })();
       </script>
-
-      <!-- 지도 밑 주소 + 복사 -->
-      <div class="addr-copy">
-        <span class="addr">영등포구 의사당대로 1</span>
-        <button class="copy-btn" onclick="copyAddr('서울특별시 영등포구 의사당대로 1')">복사</button>
-      </div>
 
       <!-- 길찾기 버튼: 카카오 · 네이버 · 티맵 -->
       <div class="map-btns">
@@ -548,16 +533,11 @@
     <!-- 연락하기 -->
     <section>
       <div class="eyebrow">CONTACT</div>
-      <div class="title">연락하기</div>
+      <div class="title">카카오톡 연락</div>
       <div class="contact">
         <a href="신랑_카카오톡_링크" target="_blank" rel="noopener">💬 신랑에게 (카카오톡)</a>
         <a href="https://qr.kakao.com/talk/oQMvfMYTdSn0g4zJ7oz4hiFjCvk-" target="_blank" rel="noopener">💬 신부에게</a>
       </div>
-    </section>
-
-    <!-- 카카오톡 공유 (눌러서 청첩장 카드 전송) -->
-    <section id="shareSection" style="display:none;">
-      <button id="kakaoShareBtn" class="share-btn">💬 카카오톡으로 공유하기</button>
     </section>
 
     <footer>
@@ -577,40 +557,6 @@
   </div>
 
   <div class="toast" id="toast">복사되었습니다</div>
-
-  <!-- 카카오톡 공유 (Kakao Developers JavaScript SDK) -->
-  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
-  <script>
-    var KAKAO_JS_KEY = "48c032207e61bf06177f4e960a394522";
-    (function () {
-      if (!KAKAO_JS_KEY || typeof Kakao === "undefined") return;
-      try {
-        if (!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
-        document.getElementById('shareSection').style.display = '';
-        document.getElementById('kakaoShareBtn').addEventListener('click', function () {
-          Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-              title: '손명준 ❤ 민지수 결혼합니다',
-              description: '2026. 11. 1. (일) 오전 11시\n국회사랑재',
-              imageUrl: 'https://www.mj-js.info/images/main.jpg',
-              link: { mobileWebUrl: 'https://www.mj-js.info/', webUrl: 'https://www.mj-js.info/' }
-            },
-            buttons: [
-              {
-                title: '청첩장 보기',
-                link: { mobileWebUrl: 'https://www.mj-js.info/', webUrl: 'https://www.mj-js.info/' }
-              },
-              {
-                title: '위치 안내',
-                link: { mobileWebUrl: 'https://kko.to/4HA4D1Zo_j', webUrl: 'https://kko.to/4HA4D1Zo_j' }
-              }
-            ]
-          });
-        });
-      } catch (e) { /* 키 오류 시 버튼 숨김 유지 */ }
-    })();
-  </script>
 
   <script>
     // 계좌 아코디언 열고 닫기
