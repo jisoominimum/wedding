@@ -318,21 +318,6 @@
       white-space: nowrap;
     }
 
-    /* ===== 공유 버튼 ===== */
-    .share-btn {
-      display: block;
-      width: 100%;
-      padding: 15px 0;
-      border: none;
-      border-radius: 8px;
-      background: #FEE500;
-      color: #3c1e1e;
-      font-family: inherit;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
     /* ===== 연락하기 ===== */
     .contact { display: flex; gap: 8px; }
     .contact a {
@@ -544,13 +529,6 @@
       </div>
     </section>
 
-    <!-- 공유하기 (카카오 JS 키 설정 시에만 노출) -->
-    <section id="shareSection" style="display:none;">
-      <div class="eyebrow">SHARE</div>
-      <div class="title">청첩장 공유하기</div>
-      <button id="kakaoShareBtn" class="share-btn">💬 카카오톡으로 공유하기</button>
-    </section>
-
     <footer>
       THANK YOU<br />
       손명준 &amp; 민지수
@@ -568,37 +546,6 @@
   </div>
 
   <div class="toast" id="toast">복사되었습니다</div>
-
-  <!-- 카카오톡 공유 (Kakao Developers JavaScript SDK) -->
-  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
-  <script>
-    // ▼ developers.kakao.com → 내 애플리케이션 → 앱 키 → "JavaScript 키" 를 붙여넣으세요.
-    //   그리고 [앱 설정 > 플랫폼 > Web]에 사이트 도메인(https://www.mj-js.info)을 등록해야 동작합니다.
-    //   비워두면 공유 버튼은 숨겨집니다(다른 기능엔 영향 없음).
-    var KAKAO_JS_KEY = "48c032207e61bf06177f4e960a394522";
-    (function () {
-      if (!KAKAO_JS_KEY || typeof Kakao === "undefined") return;
-      try {
-        if (!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
-        document.getElementById('shareSection').style.display = '';
-        document.getElementById('kakaoShareBtn').addEventListener('click', function () {
-          Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-              title: '손명준 ❤ 민지수 결혼합니다',
-              description: '2026. 11. 1. 일요일 오전 11시 · 국회사랑재',
-              imageUrl: 'https://www.mj-js.info/images/main.jpg',
-              link: { mobileWebUrl: 'https://www.mj-js.info/', webUrl: 'https://www.mj-js.info/' }
-            },
-            buttons: [{
-              title: '청첩장 보기',
-              link: { mobileWebUrl: 'https://www.mj-js.info/', webUrl: 'https://www.mj-js.info/' }
-            }]
-          });
-        });
-      } catch (e) { /* 키 오류 시 버튼 숨김 유지 */ }
-    })();
-  </script>
 
   <script>
     // 계좌 아코디언 열고 닫기
