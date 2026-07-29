@@ -187,11 +187,14 @@
       max-width: 100%;
       max-height: 88vh;
       object-fit: contain;
-      /* 확대 방지 */
-      pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
+      transform-origin: center center;
+      will-change: transform;
     }
+    .lb-slide img.zoomable { cursor: zoom-in; }
+    .lb-slide img.zoomed { cursor: grab; }
+    .lb-slide img.anim { transition: transform .25s ease; }
     .lb-close {
       position: absolute; top: 14px; right: 18px;
       color: #fff; font-size: 30px; line-height: 1;
@@ -419,7 +422,7 @@
       <!-- 페이지(3x3)는 아래 GALLERY 목록으로 자동 생성됩니다 -->
       <div class="gallery-pager" id="gallery"></div>
       <div class="gallery-dots" id="galleryDots"></div>
-      <div class="gallery-hint">← 옆으로 넘기면 더 보여요 · 사진을 누르면 크게 볼 수 있어요 →</div>
+      <div class="gallery-hint">← 옆으로 넘기면 더 보여요 · 사진을 누른 뒤 더블탭·핀치로 확대할 수 있어요 →</div>
     </section>
 
     <!-- 오시는 길 -->
@@ -733,7 +736,7 @@
       });
     })();
 
-    // ===== 갤러리 라이트박스(좌우 슬라이드, 확대 불가) =====
+    // ===== 갤러리 라이트박스(좌우 슬라이드 + 확대) =====
     (function () {
       var thumbs = Array.prototype.slice.call(document.querySelectorAll('#gallery img'));
       var srcs = thumbs.map(function (i) { return i.getAttribute('src'); });
@@ -741,6 +744,11 @@
       var track = document.getElementById('lbTrack');
       var count = document.getElementById('lbCount');
       var cur = 0;
+      var imgs = [];
+
+      var MAX_SCALE = 4;
+      // 현재 슬라이드의 확대 상태
+      var scale = 1, tx = 0, ty = 0;
 
       // 슬라이드 생성
       srcs.forEach(function (src) {
@@ -750,10 +758,31 @@
         im.src = src;
         im.loading = 'lazy';
         im.decoding = 'async';
+        im.className = 'zoomable';
         im.addEventListener('contextmenu', function (e) { e.preventDefault(); });
         slide.appendChild(im);
         track.appendChild(slide);
+        imgs.push(im);
       });
+
+      function applyZoom(animate) {
+        var im = imgs[cur];
+        if (!im) return;
+        im.classList.toggle('anim', !!animate);
+        im.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
+        im.classList.toggle('zoomed', scale > 1);
+        im.classList.toggle('zoomable', scale <= 1);
+      }
+      // 확대 배율에 맞춰 이동 범위 제한
+      function clamp() {
+        var im = imgs[cur];
+        if (!im) return;
+        var maxX = Math.max(0, (im.clientWidth * scale - im.clientWidth) / 2);
+        var maxY = Math.max(0, (im.clientHeight * scale - im.clientHeight) / 2);
+        tx = Math.min(maxX, Math.max(-maxX, tx));
+        ty = Math.min(maxY, Math.max(-maxY, ty));
+      }
+      function resetZoom() { scale = 1; tx = 0; ty = 0; applyZoom(false); }
 
       function render(animate) {
         track.classList.toggle('no-anim', !animate);
@@ -764,6 +793,7 @@
         cur = i;
         lb.classList.add('open');
         document.body.style.overflow = 'hidden';
+        resetZoom();
         render(false);
       }
       function close() {
@@ -771,8 +801,26 @@
         document.body.style.overflow = '';
       }
       function go(d) {
-        cur = Math.min(srcs.length - 1, Math.max(0, cur + d));
+        var next = Math.min(srcs.length - 1, Math.max(0, cur + d));
+        if (next === cur) { render(true); return; }
+        resetZoom();
+        cur = next;
+        resetZoom();
         render(true);
+      }
+      // 특정 지점을 중심으로 확대/원복 토글
+      function toggleZoomAt(clientX, clientY) {
+        var im = imgs[cur];
+        if (!im) return;
+        if (scale > 1) { resetZoom(); return; }
+        var rect = im.getBoundingClientRect();
+        var cx = clientX - (rect.left + rect.width / 2);
+        var cy = clientY - (rect.top + rect.height / 2);
+        scale = 2.5;
+        tx = -cx * (scale - 1);
+        ty = -cy * (scale - 1);
+        clamp();
+        applyZoom(true);
       }
 
       thumbs.forEach(function (im, i) {
@@ -785,37 +833,127 @@
       document.getElementById('lbPrev').addEventListener('click', function () { go(-1); });
       document.getElementById('lbNext').addEventListener('click', function () { go(1); });
 
-      // 좌우 스와이프
-      var startX = 0, dx = 0, dragging = false;
+      // ---- 터치: 스와이프 / 핀치 줌 / 확대 상태 팬 / 더블탭 ----
+      var startX = 0, startY = 0, dx = 0, dragging = false;
+      var panStartTx = 0, panStartTy = 0;
+      var pinchStartDist = 0, pinchStartScale = 1;
+      var lastTap = 0;
+
+      function dist(t1, t2) {
+        var x = t1.clientX - t2.clientX, y = t1.clientY - t2.clientY;
+        return Math.sqrt(x * x + y * y);
+      }
+
       track.addEventListener('touchstart', function (e) {
-        startX = e.touches[0].clientX; dx = 0; dragging = true;
+        if (e.touches.length === 2) {
+          // 핀치 시작
+          pinchStartDist = dist(e.touches[0], e.touches[1]);
+          pinchStartScale = scale;
+          dragging = false;
+          return;
+        }
+        var t = e.touches[0];
+        startX = t.clientX; startY = t.clientY; dx = 0; dragging = true;
+        panStartTx = tx; panStartTy = ty;
         track.classList.add('no-anim');
       }, { passive: true });
+
       track.addEventListener('touchmove', function (e) {
+        if (e.touches.length === 2) {
+          // 핀치 줌
+          e.preventDefault();
+          var d = dist(e.touches[0], e.touches[1]);
+          if (pinchStartDist > 0) {
+            scale = Math.min(MAX_SCALE, Math.max(1, pinchStartScale * (d / pinchStartDist)));
+            clamp();
+            applyZoom(false);
+          }
+          return;
+        }
         if (!dragging) return;
-        dx = e.touches[0].clientX - startX;
-        track.style.transform = 'translateX(calc(' + (-cur * 100) + '% + ' + dx + 'px))';
-      }, { passive: true });
-      track.addEventListener('touchend', function () {
+        var t = e.touches[0];
+        if (scale > 1) {
+          // 확대 상태: 사진 이동(팬)
+          e.preventDefault();
+          tx = panStartTx + (t.clientX - startX);
+          ty = panStartTy + (t.clientY - startY);
+          clamp();
+          applyZoom(false);
+        } else {
+          // 원본 크기: 좌우 슬라이드
+          dx = t.clientX - startX;
+          track.style.transform = 'translateX(calc(' + (-cur * 100) + '% + ' + dx + 'px))';
+        }
+      }, { passive: false });
+
+      track.addEventListener('touchend', function (e) {
+        if (e.touches.length > 0) return; // 아직 손가락이 남아있으면 대기
+        if (scale <= 1) {
+          // 스와이프 판정 (확대 상태가 아닐 때만)
+          if (Math.abs(dx) > 50) { dragging = false; go(dx < 0 ? 1 : -1); return; }
+          render(true);
+          // 더블탭 확대
+          var now = Date.now();
+          if (Math.abs(dx) < 10 && now - lastTap < 300) {
+            toggleZoomAt(startX, startY);
+            lastTap = 0;
+          } else {
+            lastTap = now;
+          }
+        }
         dragging = false;
-        if (Math.abs(dx) > 50) { go(dx < 0 ? 1 : -1); }
-        else { render(true); }
       });
 
-      // 확대(줌) 방지: 멀티터치 핀치 / iOS 제스처 / 더블탭
-      lb.addEventListener('touchmove', function (e) {
-        if (e.touches.length > 1) e.preventDefault();
-      }, { passive: false });
+      // iOS 사파리 제스처 확대 방지(자체 핀치 로직 사용)
       lb.addEventListener('gesturestart', function (e) { e.preventDefault(); });
       lb.addEventListener('gesturechange', function (e) { e.preventDefault(); });
-      lb.addEventListener('dblclick', function (e) { e.preventDefault(); });
+
+      // ---- 데스크탑: 더블클릭 확대 / 휠 줌 / 드래그 팬 ----
+      track.addEventListener('dblclick', function (e) {
+        e.preventDefault();
+        toggleZoomAt(e.clientX, e.clientY);
+      });
+      track.addEventListener('wheel', function (e) {
+        if (!lb.classList.contains('open')) return;
+        e.preventDefault();
+        var im = imgs[cur];
+        if (!im) return;
+        var prev = scale;
+        scale = Math.min(MAX_SCALE, Math.max(1, scale - e.deltaY * 0.002 * scale));
+        if (scale === 1) { tx = 0; ty = 0; }
+        else {
+          var rect = im.getBoundingClientRect();
+          var cx = e.clientX - (rect.left + rect.width / 2);
+          var cy = e.clientY - (rect.top + rect.height / 2);
+          var f = scale / prev;
+          tx = cx - (cx - tx) * f;
+          ty = cy - (cy - ty) * f;
+          clamp();
+        }
+        applyZoom(false);
+      }, { passive: false });
+
+      var mouseDown = false, mStartX = 0, mStartY = 0, mTx = 0, mTy = 0;
+      track.addEventListener('mousedown', function (e) {
+        if (scale <= 1) return;
+        mouseDown = true; mStartX = e.clientX; mStartY = e.clientY; mTx = tx; mTy = ty;
+        e.preventDefault();
+      });
+      window.addEventListener('mousemove', function (e) {
+        if (!mouseDown) return;
+        tx = mTx + (e.clientX - mStartX);
+        ty = mTy + (e.clientY - mStartY);
+        clamp();
+        applyZoom(false);
+      });
+      window.addEventListener('mouseup', function () { mouseDown = false; });
 
       // 데스크탑 키보드
       document.addEventListener('keydown', function (e) {
         if (!lb.classList.contains('open')) return;
         if (e.key === 'ArrowLeft') go(-1);
         else if (e.key === 'ArrowRight') go(1);
-        else if (e.key === 'Escape') close();
+        else if (e.key === 'Escape') { if (scale > 1) resetZoom(); else close(); }
       });
     })();
   </script>
